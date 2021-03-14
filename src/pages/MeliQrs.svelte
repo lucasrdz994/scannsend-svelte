@@ -1,5 +1,5 @@
 <script>
-  import { MaterialApp, Container, Card, CardTitle, Row, Col, TextField, List, ListItem, Button, Alert } from 'svelte-materialify';
+  import { MaterialApp, Container, Card, CardTitle, Row, Col, TextField, List, ListItem, Button, Alert, Snackbar } from 'svelte-materialify';
   import { user } from '../stores/user';
   import { shipments } from '../stores/shipments';
   import { report } from '../stores/report';
@@ -21,19 +21,26 @@
   let value = '';
   let filteredShipments = [];
   let filterInput = '';
+  let snackbar = false;
+  let snackbarText = 'Paquete cargado correctamente.';
 
   async function handleQrInput(e) {
-    if(e.code === 'Backslash' || e.code === 'Enter') {
-      const qrObj = JSON.parse(value);
-      value = '';
-      const response = await validateQr(qrObj, $shipments)
-      console.log(response)
-      if (response.status === 'error') {
-        errorMessage = response.message;
-        error = true;
-        return console.log('envio dup')
+    if(e.code === 'Enter' && value !== '') {
+      try {
+        const qrObj = JSON.parse(value);
+        value = '';
+        const response = await validateQr(qrObj, $shipments)
+        console.log(response)
+        if (response.status === 'error') {
+          errorMessage = response.message;
+          error = true;
+          return console.log('envio dup')
+        }
+        shipments.add(response.shipping)
+        snackbar = true;
+      } catch (error) {
+        console.log(error);
       }
-      shipments.add(response.shipping)
     }
   }
 
@@ -62,7 +69,7 @@
 
   $: filteredShipments = $shipments;
 
-  // {"id":40293573908, "sellerId": 156168198}
+  // {"id":40293573908, "sender_id": 156168198}
 
 </script>
 
@@ -82,14 +89,14 @@
       </Col>
       <Col cols={4}>
         <Card outlined>
-          <CardTitle>Paquetes escaneados</CardTitle>
+          <CardTitle>Paquetes escaneados - Total: {$shipments.length}</CardTitle>
           <div class="pa-4">
             <Button on:click={addToReport} text>Agregar todo al reporte</Button>
           </div>
           <List style="height: 100vh; overflow-y: auto;">
             {#if $shipments.length}
               <div class="pa-4">
-                <TextField bind:value={filterInput} on:keyup={handleFilter} placeholder="Por comprador, dirección, # de orden o # de envío.">
+                <TextField id="inputElement" bind:value={filterInput} on:keyup={handleFilter} placeholder="Por comprador, dirección, # de orden o # de envío.">
                   Filtrar resultados
                 </TextField>
               </div>
@@ -112,4 +119,7 @@
   </Container>
   <ErrorAlert bind:active={error} {errorMessage} on:close={() => error = false} />
   <PackageInfo bind:active={packageDialog} {packageDetails} on:close={() => packageDialog = false} />
+  <Snackbar bind:active={snackbar} right top timeout={3000}>
+    {snackbarText}
+  </Snackbar>
 </MaterialApp>

@@ -1,9 +1,11 @@
 <script>
-	import Router, { push } from 'svelte-spa-router';
+	import Router, { push, querystring } from 'svelte-spa-router';
 	import routes from './router';
+	import { onMount } from 'svelte';
 	import { MaterialApp, Button, AppBar, Menu, List, ListItem, Icon } from 'svelte-materialify';
 	import { mdiAccount } from '@mdi/js';
 	import { auth } from './firebase';
+	import { linkNewMeliAccount } from './utils/user';
 
 	import { user } from './stores/user';
 
@@ -12,6 +14,15 @@
 
 	// Login form modal controller 
 	let active = false;
+
+	// Check new meli account code
+  onMount(async () => {
+    if ($querystring) {
+      const userData = await linkNewMeliAccount($querystring);
+      console.log(userData)
+			push('/settings');
+    }
+  })
 </script>
 
 <MaterialApp>

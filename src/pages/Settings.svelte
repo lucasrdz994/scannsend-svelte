@@ -1,9 +1,7 @@
 <script>
   import { MaterialApp, Container, Card, CardTitle, CardSubtitle, Chip, Icon } from 'svelte-materialify';
-  import { querystring } from 'svelte-spa-router'
   import { mdiPlus } from '@mdi/js';
-  import { onMount } from 'svelte';
-  import { getMeliAccounts, linkNewMeliAccount } from '../utils/user';
+  import { getMeliAccounts } from '../utils/user';
   import { user } from '../stores/user';
 
   // Get meli accounts from user
@@ -13,14 +11,6 @@
   function linkMeliAccount() {
     window.location.href = "https://auth.mercadolibre.com.ar/authorization?response_type=code&client_id=7167039500463579&redirect_uri=https://scannsend-707df.web.app/panel/settings";
   }
-
-  // Check new meli account code
-  onMount(async () => {
-    if ($querystring) {
-      const userData = await linkNewMeliAccount($querystring);
-      console.log(userData)
-    }
-  })
 
 </script>
 

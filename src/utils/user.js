@@ -65,41 +65,45 @@ export async function linkNewMeliAccount(querystring) {
       client_id: '7167039500463579',
       client_secret: 'Qcd2SBxLxkcdONFj5jmyvpNt2UgJVRoI',
       ...code,
-      redirect_uri: 'https://scannsend-707df.web.app/panel/settings'
+      redirect_uri: 'https://scannsend-amitosai.web.app'
     })
     const headers = {
       'accept': 'application/json',
       'content-type': 'application/x-www-form-urlencoded'
     }
     try {
-      const res = await fetch('https://api.mercadolibre.com/oauth/token', 
+      const res_token = await fetch('https://api.mercadolibre.com/oauth/token', 
       {
         method: 'POST',
         body,
         headers
       })
 
-      const user = await fetch('https://api.mercadolibre.com/users/me',
+      const data_token = await res_token.json();
+
+      const user_res = await fetch('https://api.mercadolibre.com/users/me',
       {
         headers: {
-          'Authorization': 'Bearer ' + res.access_token
+          'Authorization': 'Bearer ' + data_token.access_token
         }
       })
 
+      const user_data = await user_res.json();
+
       const userData = {
-        accessToken: res.access_token,
-        refreshToken: res.refresh_token,
-        tokenType: res.token_type,
-        sellerId: Number(res.user_id),
-        nickname: user.nickname,
-        expiresIn: res.expires_in,
-        expires: Date.now() + (res.expires_in * 1000)
+        accessToken: data_token.access_token,
+        refreshToken: data_token.refresh_token,
+        tokenType: data_token.token_type,
+        sellerId: Number(data_token.user_id),
+        nickname: user_data.nickname,
+        expiresIn: data_token.expires_in,
+        expires: Date.now() + (data_token.expires_in * 1000)
       }
 
       await db.collection('users')
       .doc(auth.currentUser.uid)
       .collection('meliAccounts')
-      .doc(String(res.user_id))
+      .doc(String(data_token.user_id))
       .set(userData)
 
       return userData;

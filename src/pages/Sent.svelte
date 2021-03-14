@@ -146,7 +146,7 @@
         <Row>
           <Col cols={9}>
             <div class="d-flex align-center">
-              <p class="font-weight-light ma-0 mr-4">Mostrando máximo 50 registros.</p>
+              <p class="font-weight-light ma-0 mr-4">Mostrando {filteredSent.length} registros.</p>
               <Button on:click={prevPage}>Anterior</Button>
               <Button on:click={nextPage}>Siguiente</Button>
             </div>
