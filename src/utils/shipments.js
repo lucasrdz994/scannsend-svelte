@@ -29,13 +29,13 @@ export async function validateQr(qr, packages) {
     
     // Check shipping status
     if (data.status !== 'ready_to_ship') {
-      // if (data.status === 'delivered') {
-      //   throw new Error('El paquete ya fue entregado al comprador.');
-      // } else if (data.status === 'canceled') {
-      //   throw new Error('La operación fue cancelada. No envíes este paquete.');
-      // } else {
-      //   throw new Error('Revisá la operación en Mercado Libre.');
-      // }
+      if (data.status === 'delivered') {
+        throw new Error('El paquete ya fue entregado al comprador.');
+      } else if (data.status === 'canceled') {
+        throw new Error('La operación fue cancelada. No envíes este paquete.');
+      } else {
+        throw new Error('Revisá la operación en Mercado Libre.');
+      }
     }
 
     // Shipment data objet
