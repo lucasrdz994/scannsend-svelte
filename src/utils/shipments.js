@@ -82,16 +82,16 @@ export async function validateQr(qr, packages) {
 
     shippingData.uid = newDoc.id
 
-    await fetch('https://us-central1-scannsend-amitosai.cloudfunctions.net/addNote', {
-      method: 'POST',
-      body: JSON.stringify({
-        order_id: data.order_id,
-        token: meliAcccount.accessToken
-      }),
-      headers: {
-        'Content-Type': 'application/json'
-      }
-    })
+    // await fetch('https://us-central1-scannsend-amitosai.cloudfunctions.net/addNote', {
+    //   method: 'POST',
+    //   body: JSON.stringify({
+    //     order_id: data.order_id,
+    //     token: meliAcccount.accessToken
+    //   }),
+    //   headers: {
+    //     'Content-Type': 'application/json'
+    //   }
+    // })
 
     return {
       status: 'ok',

@@ -1,49 +1,67 @@
 const functions = require("firebase-functions");
-// const axios = require('axios');
-// // Create and Deploy Your First Cloud Functions
-// // https://firebase.google.com/docs/functions/write-firebase-functions
-//
-exports.hello = functions.https.onCall((data, context) => {
-  const firstName = data.firstName;
-  const lastName = data.lastName;
-      
-  return {
-    firstName : firstName,
-    lastName : lastName,
-    fullName : firstName + " " + lastName
-  }
+const admin = require('firebase-admin');
+const axios = require('axios');
+admin.initializeApp();
+
+const db = admin.firestore();
+
+exports.writeNote = functions.firestore
+  .document('users/{userId}/shipments/{shipmentId}')
+  .onCreate(async (snap, context) => {
+    const itemData = snap.data();
+
+    const orderId = itemData.orderId;
+    const sellerId = itemData.seller.id;
+
+    const doc = await db.doc(`users/${context.params.userId}/meliAccounts/${sellerId}`).get();
+    const accessToken = doc.data().accessToken;
+
+    await axios.post(`https://api.mercadolibre.com/orders/${orderId}/notes`, {
+      "note": "Paquete escaneado en Scannsend."
+    }, {
+      headers: {
+        Authorization: `Bearer ${accessToken}`
+      }
+    })
 });
 
+exports.sendMessage = functions.firestore
+  .document('users/{userId}/shipments/{shipmentId}')
+  .onCreate(async (snap, context) => {
+    const itemData = snap.data();
 
-// const express = require('express');
-// const cors = require('cors');
-// const axios = require('axios');
+    let orderId = itemData.orderId;
+    const sellerId = itemData.seller.id;
 
-// const app = express();
+    const doc = await db.doc(`users/${context.params.userId}/meliAccounts/${sellerId}`).get();
+    const accessToken = doc.data().accessToken;
 
-// app.use(express.json())
+    const orderData = await axios.get(`https://api.mercadolibre.com/orders/${orderId}`, {
+      headers: {
+        Authorization: `Bearer ${accessToken}`
+      }
+    })
 
-// // Automatically allow cross-origin requests
-// app.use(cors({ origin: true }));
+    const packId = orderData.data.pack_id;
 
-// app.post('/', async (req, res) => {
-//   const { token, order_id } = req.body;
-//   console.log(order_id)
-//   try {
-//     const data = await axios.post(`https://api.mercadolibre.com/orders/${order_id}/notes`, {
-//       "note": "Paquete escaneado en Scannsend."
-//     }, {
-//       headers: {
-//         Authorization: `Bearer ${token}`
-//       }
-//     })
-//     console.log(data)
-//     res.json({message: 'Todo ok'})
-//   } catch (error) {
-//     console.log(error)
-//     res.json({message: 'Algo salio mal'})
-//   }
-// });
+    if (packId !== null) {
+      orderId = packId;
+    }
 
-// // Expose Express API as a single Cloud Function:
-// exports.addNote = functions.https.onRequest(app);
+    await axios.post(`https://api.mercadolibre.com/messages/action_guide/packs/${orderId}/option`, {
+      "option_id": "DELIVERY_PROMISE",
+      "template_id": "TEMPLATE___DELIVERY_PROMISE___1",
+      "vars": [{
+          "id": "TEMPLATE___DELIVERY_PROMISE___1___VAR___INIT",
+          "value": 13
+      },
+      {
+          "id": "TEMPLATE___DELIVERY_PROMISE___1___VAR___LIMIT",
+          "value": 21
+      }]
+    }, {
+      headers: {
+        Authorization: `Bearer ${accessToken}`
+      }
+    })
+});

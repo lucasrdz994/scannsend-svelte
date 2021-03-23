@@ -24,20 +24,6 @@
   let snackbar = false;
   let snackbarText = 'Paquete cargado correctamente.';
 
-  import { onMount } from 'svelte';
-  import { functions } from '../firebase';
-
-  onMount(() => {
-    const hello = functions.httpsCallable('hello');
-    hello({
-      firstName: 'Lucas',
-      lastName: 'Rodriguez'
-    }).then(result => {
-      console.log(result)
-    })
-  })
-
-
   // After 1sec remove text from input
   $: if (value) {
     (async function () {
@@ -47,19 +33,6 @@
         await handleQrInput(qrObj);
         setTimeout(() => {
           value = '';
-
-          // fetch('http://localhost:5001/scannsend-amitosai/us-central1/addNote', {
-          //   method: 'POST',
-          //   body: JSON.stringify({
-          //     order_id: 4411334648
-          //   }),
-          //   headers: {
-          //     'Content-Type': 'application/json'
-          //   }
-          // })
-          // .then(resp => resp.json())
-          // .then(datas => console.log(datas))
-
         }, 1000);
       } catch (error) {
         // console.log(error)
