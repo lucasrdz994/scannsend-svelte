@@ -31,7 +31,7 @@ export async function validateQr(qr, packages) {
     if (data.status !== 'ready_to_ship') {
       if (data.status === 'delivered') {
         throw new Error('El paquete ya fue entregado al comprador.');
-      } else if (data.status === 'canceled') {
+      } else if (data.status === 'cancelled') {
         throw new Error('La operación fue cancelada. No envíes este paquete.');
       } else {
         throw new Error('Revisá la operación en Mercado Libre.');
@@ -81,6 +81,17 @@ export async function validateQr(qr, packages) {
     .add(shippingData)
 
     shippingData.uid = newDoc.id
+
+    // await fetch('https://us-central1-scannsend-amitosai.cloudfunctions.net/addNote', {
+    //   method: 'POST',
+    //   body: JSON.stringify({
+    //     order_id: data.order_id,
+    //     token: meliAcccount.accessToken
+    //   }),
+    //   headers: {
+    //     'Content-Type': 'application/json'
+    //   }
+    // })
 
     return {
       status: 'ok',

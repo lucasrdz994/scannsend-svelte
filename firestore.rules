@@ -1,0 +1,10 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    match /users/{user}/{document=**} {
+    	// Solo usuarios registrados y sus propios datos.
+      allow read, update, delete: if request.auth != null && request.auth.uid == user;
+      allow create: if request.auth != null;
+    }
+  }
+}

@@ -24,24 +24,32 @@
   let snackbar = false;
   let snackbarText = 'Paquete cargado correctamente.';
 
-  async function handleQrInput(e) {
-    if(e.code === 'Enter' && value !== '') {
+  // After 1sec remove text from input
+  $: if (value) {
+    (async function () {
       try {
-        const qrObj = JSON.parse(value);
-        value = '';
-        const response = await validateQr(qrObj, $shipments)
-        console.log(response)
-        if (response.status === 'error') {
-          errorMessage = response.message;
-          error = true;
-          return console.log('envio dup')
-        }
-        shipments.add(response.shipping)
-        snackbar = true;
+        const qrObj = await JSON.parse(value);
+        // console.log(qrObj);
+        await handleQrInput(qrObj);
+        setTimeout(() => {
+          value = '';
+        }, 1000);
       } catch (error) {
-        console.log(error);
+        // console.log(error)
       }
+    })()
+  }
+
+  async function handleQrInput(qrObj) {
+    const response = await validateQr(qrObj, $shipments)
+    console.log(response)
+    if (response.status === 'error') {
+      errorMessage = response.message;
+      error = true;
+      return;
     }
+    shipments.add(response.shipping)
+    snackbar = true;
   }
 
   function scannedPackagesActions(item) {
@@ -50,7 +58,6 @@
   }
   
   function addToReport() {
-  // Agrego al reporte, tengo que crear un nuevo store
     report.addAll($shipments);
   }
 
@@ -69,14 +76,12 @@
 
   $: filteredShipments = $shipments;
 
-  // {"id":40293573908, "sender_id": 156168198}
-
 </script>
 
 <MaterialApp>
   <Container>
     <h1 class="text-h4 mb-8">Escaneá tus paquetes de Flex</h1>
-    <TextField placeholder="Código Qr" on:keyup={handleQrInput} bind:value />
+    <TextField placeholder="Código Qr" bind:value />
     <Row>
       <Col cols={8}>
         {#await meliAccountsPromise}
@@ -96,7 +101,7 @@
           <List style="height: 100vh; overflow-y: auto;">
             {#if $shipments.length}
               <div class="pa-4">
-                <TextField id="inputElement" bind:value={filterInput} on:keyup={handleFilter} placeholder="Por comprador, dirección, # de orden o # de envío.">
+                <TextField bind:value={filterInput} on:keyup={handleFilter} placeholder="Por comprador, dirección, # de orden o # de envío.">
                   Filtrar resultados
                 </TextField>
               </div>
